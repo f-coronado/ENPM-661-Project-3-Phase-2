@@ -3,6 +3,11 @@ import cv2 as cv
 from queue import PriorityQueue
 import math
 
+# https://emanual.robotis.com/docs/en/platform/turtlebot3/features/#specifications
+RobotWheelRadius = 66/2 # mm
+robotRadius = 80 # mm
+wheelDistance = 178 # mm
+
 boundry = []    
 Pth = {}        #Stores the path for backtracking
 UncheckedList = PriorityQueue()     #Used to store unvisited nodes
@@ -249,7 +254,7 @@ def B_tracking(Pth, initial_pt, goal_pt):
 space = np.ones((251,601,3),dtype='uint8')  #Creating an matrix with ones, of the shape of boundry shape
 velocities = User_Inputs_RPMs()
 Robot_Radius = int(input("Enter the Radius of the robot: "))
-Obstacle_Clearance = int(input("Enter the Obstacle Clearance of the Robot: "))
+Obstacle_Clearance = int(input("Enter the Obstacle Clearance of the Robot: ")) + robotRadius # slide 5 from project 3 phase 2 says to add the robotRadius to clearance
 obstacle_space(space)           #Creating the obstacle boundries
 
 
