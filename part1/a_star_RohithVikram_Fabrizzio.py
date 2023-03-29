@@ -99,15 +99,26 @@ def User_Inputs_Goal(Obs_Coords):
     while True:
         x = int(input("Enter the Goal x node: "))
         y = int(input("Enter the Goal y node: "))
-        z = int(input("Enter the orientation of robot at goal pt.(in degrees): "))
         #goal_node = (x,y)
         if((x>=0) or (x<=600)) and (y>=0) or (y<=250):
             if (x,y) not in Obs_Coords and ((x + Robot_Radius),y) not in Obs_Coords and ((x-Robot_Radius),y) not in Obs_Coords and (x,(y+Robot_Radius)) not in Obs_Coords  and (x,(y-Robot_Radius)) not in Obs_Coords:
-                goal_node=(x,y,z)
+                goal_node=(x,y) # removed z bc we dont care about orientation when arriving at the goal node
                 break
             else:
                 print("The Entered Goal Node is in obstacle space")
     return goal_node
+
+def User_Inputs_RPMs():
+    print("Enter 50 or 100 for RPM velocities...")
+    while True:
+        rpm1 = int(input("Please enter RPM1: "))
+        if rpm1 == 50 or rpm1 == 100:
+            break
+    while True:
+        rpm2 = int(input("Please enter RPM2: "))
+        if rpm2 == 50 or rpm2 == 100:
+            break
+    return [rpm1, rpm2]
 
 #zero degrees function for A*
 def Robot_0(a):
@@ -236,6 +247,7 @@ def B_tracking(Pth, initial_pt, goal_pt):
     return (b_track)
          
 space = np.ones((251,601,3),dtype='uint8')  #Creating an matrix with ones, of the shape of boundry shape
+velocities = User_Inputs_RPMs()
 Robot_Radius = int(input("Enter the Radius of the robot: "))
 Obstacle_Clearance = int(input("Enter the Obstacle Clearance of the Robot: "))
 obstacle_space(space)           #Creating the obstacle boundries
