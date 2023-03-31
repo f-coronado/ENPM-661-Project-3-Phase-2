@@ -5,7 +5,7 @@ import math
 
 # https://emanual.robotis.com/docs/en/platform/turtlebot3/features/#specifications
 RobotWheelRadius = 66/2 # mm
-robotRadius = 80 # mm
+robotRadius = .08 # mm
 wheelDistance = 178 # mm
 
 boundry = []    
@@ -83,9 +83,6 @@ def resize_obstacle(space):
                 boundry.append((m,250-l))
     return boundry
 
-
-
-
 #Getting User Inputs For the Start node from the user
 def User_Inputs_Start(Obs_Coords):
     while True:
@@ -127,8 +124,8 @@ def User_Inputs_RPMs():
 
 def cost(Xi,Yi,Thetai,UL,UR):
     t = 0
-    r = 0.038
-    L = 0.354
+    r = 0.066
+    L = 0.178
     dt = 0.1
     Xn=Xi
     Yn=Yi
@@ -139,15 +136,20 @@ def cost(Xi,Yi,Thetai,UL,UR):
 # Xs, Ys: Start point coordinates for plot function
 # Xn, Yn, Thetan: End point coordintes
     D=0
-    while t<1:
+
+    while t<.2:
         t = t + dt
-        Xs = Xn
-        Ys = Yn
+        # Xs = Xn
+        # Ys = Yn
         Delta_Xn = 0.5*r * (UL + UR) * math.cos(Thetan) * dt
         Delta_Yn = 0.5*r * (UL + UR) * math.sin(Thetan) * dt
+        Xn += Delta_Xn # update the positions each iteration
+        Yn += Delta_Yn
+        # plt.plot(Xn, Yn, 's')
         Thetan += (r / L) * (UR - UL) * dt
-        D=D+ math.sqrt(math.pow((0.5*r * (UL + UR) * math.cos(Thetan) * dt),2)+math.pow((0.5*r * (UL + UR) * math.sin(Thetan) * dt),2))
+        D += math.sqrt(math.pow((0.5*r * (UL + UR) * math.cos(Thetan) * dt),2) + math.pow((0.5*r * (UL + UR) * math.sin(Thetan) * dt),2))
     Thetan = 180 * (Thetan) / 3.14
+    
     return Xn, Yn, Thetan, D
 
 #zero degrees function for A*
