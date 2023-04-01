@@ -126,7 +126,7 @@ def cost(Xi,Yi,Thetai,UL,UR):
     t = 0
     r = 0.066
     L = 0.178
-    dt = 0.1
+    dt = 0.25
     Xn=Xi
     Yn=Yi
     Thetan = 3.14 * Thetai / 180
@@ -137,7 +137,7 @@ def cost(Xi,Yi,Thetai,UL,UR):
 # Xn, Yn, Thetan: End point coordintes
     D=0
 
-    while t<.2:
+    while t<1:
         t = t + dt
         # Xs = Xn
         # Ys = Yn
