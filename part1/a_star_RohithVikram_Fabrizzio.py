@@ -9,9 +9,12 @@ UncheckedList = PriorityQueue()     #Used to store unvisited nodes
 b_track = []            
 CloseList = []
 CheckedList = np.zeros((250,600),dtype='uint8')     # Used to store the visited nodes
-Robot_Radius = 11     #Needs to be changed to 10.5
-Wheel_Radius = 3.3
-Wheel_Length = 16
+
+# # https://emanual.robotis.com/docs/en/platform/turtlebot3/features/#specifications
+
+Robot_Radius = .105     # converted mm to m
+Wheel_Radius = .033
+Wheel_Length = .16
 #Creating the Obstacle Space
 #Obtacle with Obstacle, Obstacle Clearance and Robot Radius
 def obstacle_space(space):
@@ -126,8 +129,10 @@ def func_Cost(theta,ul,ur):
     D = 0
     while t<1:
         t = t+dt
-        Xn = 0.5*Wheel_Radius*(ul+ur)*np.cos(theta_n)*dt
-        Yn = 0.5*Wheel_Radius*(ul+ur)*np.sin(theta_n)*dt
+        Delta_Xn = .5 * Wheel_Radius * (ul + ur) * np.cos(theta_n) * dt
+        Delta_Yn = .5 * Wheel_Radius * (ul + ur) * np.sin(theta_n) * dt
+        Xn += Delta_Xn
+        Yn += Delta_Yn
         theta_n += (Wheel_Radius/Wheel_Length)*(ur-ul)
         D = D+math.sqrt(math.pow((0.5*Wheel_Radius * (ul + ur) * math.cos(theta_n) * dt),2)+math.pow((0.5*Wheel_Radius * (ul + ur) * math.sin(theta_n) * dt),2))
     theta_n = (180*(theta_n))/np.pi
