@@ -4,7 +4,7 @@
         <!-- For the arg name, give any name of your choice to this world -->
         <!-- for the value tag, provide the path to the world file that you downloaded -->
 	<include file= "$(find gazebo_ros)/launch/empty_world.launch"> 
-		<arg name="world_name" value="$(find proj3p2_ENPM661)/world/map.world"/> 
+		<!-- <arg name="world_name" value="$(find proj3p2_ENPM661)/world/map.world"/>  -->
 	</include>
 
     <!--  -->
@@ -19,7 +19,7 @@
         pkg = "gazebo_ros"
         type = "spawn_model"
 		args="$(arg init_pose) -param robot_description -urdf -model my_robot" />
-        <!-- args = "-urdf -model turtlebot3_burger -param robot_description -x 0 -y 0 -z 0.1" /> -->
+        <!-- args = "$ -urdf -model turtlebot3_burger -param robot_description -x 0 -y 0 -z 0.1" /> -->
 		
 
 </launch>
