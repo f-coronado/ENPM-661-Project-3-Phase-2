@@ -4,7 +4,7 @@ import cv2 as cv
 from queue import PriorityQueue
 import math
 
-boundry = []    
+boundry = []
 Pth = {}        #Stores the path for backtracking
 UncheckedList = PriorityQueue()     #Used to store unvisited nodes
 b_track = []            
