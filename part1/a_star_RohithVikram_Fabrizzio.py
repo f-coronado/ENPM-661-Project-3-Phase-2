@@ -19,56 +19,35 @@ def obstacle_space(space):
     h,w,_ = space.shape
     for l in range(h):
         for m in range(w):
-            if ((250-l) - 5 < 0) or ((m) - 5 < 0) or ((250-l) - 245 > 0) or ((m) - 595 > 0): #boundary
+            if ((200-l) - 5 < 0) or ((m) - 5 < 0) or ((200-l) -195 > 0) or ((m) - 595 > 0): #boundary
                 space[l][m] = [0,0,255]
                 
-            if (m > (100-(Obstacle_Clearance+Robot_Radius))) and (m < (151+(Obstacle_Clearance+Robot_Radius))) and (250-l < 101+(Obstacle_Clearance+Robot_Radius)) and (250-l > 2): #rectangle1 with robot radius clearance
+            if (m > ((150-Obstacle_Clearance)-Robot_Radius)) and (m < (165+Obstacle_Clearance+Robot_Radius)) and (200-l < 200) and (200-l > ((75-Obstacle_Clearance)-Robot_Radius)):   #rectangle1 with Obstacle clearance and Robot Radius
                 space[l][m] = [20,0,0]
-                
-            if (m > 100-Obstacle_Clearance) and (m < 151+Obstacle_Clearance) and (250-l < 101+Obstacle_Clearance) and (250-l >2):     #rectangle1 with boundry clearance
-                space[l][m] = [0,255,0]
-                
-            if (m > 100) and (m < 151) and (250-l < 101) and (250-l > 2):   #rectangle1
-                space[l][m] = [0,0,255]
-                
-            if(m > 100-(Obstacle_Clearance+Robot_Radius)) and (m < 151+(Obstacle_Clearance+Robot_Radius)) and (250-l >150-(Obstacle_Clearance+Robot_Radius)) and (250-l < 248):
-                space[l][m] = [20,0,0]
-                
-            if(m > 100-Obstacle_Clearance) and (m < 151 + Obstacle_Clearance) and (250-l >150-Obstacle_Clearance) and (250-l < 248):
-                space[l][m] = [0,255,0]
-                
-            if (m > 100) and (m < 151) and (250-l >150) and (250-l < 248):  #rectangle2
-                space[l][m] = [0,0,255]
-            new_v1 = 223.205 - Obstacle_Clearance*1.154
-            new_v2 = 26.795 + Obstacle_Clearance*1.154
-            new_v3 = 373.207 + Obstacle_Clearance*1.154
-            new_v4 = 123.207 +Obstacle_Clearance*1.154    
-            new_c1 = new_v1 - Robot_Radius*1.154
-            new_c2 = new_v2 + Robot_Radius*1.154
-            new_c3 = new_v3 + Robot_Radius*1.154
-            new_c4 = new_v4 + Robot_Radius*1.154
-            if (((0.577*m)+(250-l)-new_c1)>=0) and ((m-235.048+(Obstacle_Clearance+Robot_Radius))>=0) and (((-0.577*m)+(250-l)-new_c2<=0)) and (((0.577*m)+(250-l)-new_c3)<=0) and ((m-364.951-(Obstacle_Clearance+Robot_Radius))<=0) and (((-0.577*m)+(250-l)+new_c4)>=0):
-                space[l][m] = [20,0,0]
-                
-            if (((0.577*m)+(250-l)-new_v1)>=0) and ((m-235.048+Obstacle_Clearance)>=0) and (((-0.577*m) + (250-l)-new_v2<=0)) and (((0.577*m)+(250-l)- new_v3)<=0) and ((m-364.951-Obstacle_Clearance)<=0) and (((-0.577*m)+(250-l)+new_v4)>=0):
-                space[l][m] = [0,255,0]
-                
-            if (((9375*m)+(16238*(250-l))-3624400)>=0) and (((125*m)-29381)>=0) and (((9375*m)-(16238*(250-l))+435100)>=0) and (((37500*m)+(64951*(250-l))-24240200)<=0) and (((1000*m)-364951)<=0) and (((37500*m)-(64951*(250-l))-8002450)<=0):   #hexagon
-                space[l][m] = [0,0,255]
 
-            t_v1 = 1145 + Obstacle_Clearance*2.23
-            t_v2 = 895 + Obstacle_Clearance*2.23    
-            t_c1 = t_v1 + Robot_Radius*2.23
-            t_c2 = t_v2 + Robot_Radius*2.23
-            if(((m-460+(Obstacle_Clearance+Robot_Radius))>=0)) and (((2*m)+(250-l)-t_c1)<=0) and (((2*m)-(250-l)-t_c2)<=0) and ((250-l)>25-(Obstacle_Clearance+Robot_Radius)) and ((250-l)<(225+Obstacle_Clearance+Robot_Radius)):
-                space[l][m] = [20,0,0]
-                
-            if ((m-460+Obstacle_Clearance)>=0) and (((2*m)+(250-l)-t_v1)<=0) and (((2*m)-(250-l)-t_v2)<=0) and ((250-l)>(25-Obstacle_Clearance)) and ((250-l)<(225+Obstacle_Clearance)):
+            if (m > (150-Obstacle_Clearance)) and (m < (165+Obstacle_Clearance)) and (200-l < 200) and (200-l > (75-Obstacle_Clearance)):   #rectangle1 with Obstacle Clearance
                 space[l][m] = [0,255,0]
                 
-            if (((m-460)>=0)) and(((2*m)+(250-l)-1145)<=0)and (((2*m)-(250-l)-895)<=0): #triangle
+            if (m > 150) and (m < 165) and (200-l < 200) and (200-l > 75):   #rectangle1
                 space[l][m] = [0,0,255]
                 
+            if (m > ((250-Obstacle_Clearance)-Robot_Radius)) and (m < (265+Obstacle_Clearance+Robot_Radius)) and (200-l >0) and (200-l < (125+Obstacle_Clearance+Robot_Radius)):  #rectangle2 with Obstacle clearance and Robot Radius
+                space[l][m] = [20,0,0]
+
+            if (m > (250-Obstacle_Clearance)) and (m < (265+Obstacle_Clearance)) and (200-l >0) and (200-l < (125+Obstacle_Clearance)):  #rectangle2 with Obstacle clearance
+                space[l][m] = [0,255,0]
+
+            if (m > 250) and (m < 265) and (200-l >0) and (200-l < 125):  #rectangle2
+                space[l][m] = [0,0,255]
+            
+            if (math.pow((m-400),2) + math.pow(((200-l)-110),2) - math.pow((50+Obstacle_Clearance+Robot_Radius),2)) < 0:    #Circle with Obstacle clearance and Robot Radius
+                space[l][m] = [20,0,0]
+
+            if (math.pow((m-400),2) + math.pow(((200-l)-110),2) - math.pow((50+Obstacle_Clearance),2)) < 0: #Circle with Obstacle Clearance
+                space[l][m] = [0,255,0]
+                
+            if (math.pow((m-400),2) + math.pow(((200-l)-110),2) - math.pow(50,2)) < 0: #Circle
+                space[l][m] = [0,0,255]                
     return 
 #taking the obstacle coordinates into a list
 def boundry_creation(space):
@@ -139,8 +118,6 @@ def func_Cost(old_x,old_y,theta,ul,ur):
     Yn = old_y
     while t<1:
         t = t+dt
-        Xs = Xn
-        Ys = Yn
         Xn += 0.5*Wheel_Radius*(ul+ur)*np.cos(theta_n)*dt
         Yn += 0.5*Wheel_Radius*(ul+ur)*np.sin(theta_n)*dt
         # print(Xn)
@@ -148,7 +125,7 @@ def func_Cost(old_x,old_y,theta,ul,ur):
         theta_n += (Wheel_Radius/Wheel_Length)*(ur-ul)
         if (round(Xn),round(Yn)) not in Obs_Coords:
             D = D+math.sqrt(math.pow((0.5*Wheel_Radius * (ul + ur) * np.cos(theta_n) * dt),2)+math.pow((0.5*Wheel_Radius * (ul + ur) * np.sin(theta_n) * dt),2))
-            plt.scatter(Xn, Yn, color="blue")
+            
         else:
             D = 0
             Xn = old_x
@@ -165,7 +142,7 @@ def a_star_function(pos,vel1,vel2):
         Cost = Costfn[0]
         x,y,_ = newPos
         if (0<=round(x)<600) and (0<=round(y)<250):
-            if (CheckedList[round(y)][round(x)] != 1) and ((round(x),round(y)) not in Obs_Coords):
+            if (CheckedList[int(round(y))][int(round(x))] != 1) and ((int(round(x)),int(round(y))) not in Obs_Coords):
                     CloseList.append((round(x),round(y),newPos[2]))
                     Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
                     TotalCost = Cost + Eucledian_dist
@@ -228,6 +205,7 @@ def rpm_to_velocity(rpm1,rpm2):
 #Defining the bactracking algorithm 
 def B_tracking(Pth, initial_pt):
     b_track = []
+    
     a = list(Pth)[-1]
     K = Pth.get(a)
     b_track.append(a)
@@ -240,13 +218,13 @@ def B_tracking(Pth, initial_pt):
     b_track.reverse()
     return (b_track)
          
-space = np.ones((251,601,3),dtype='uint8')  #Creating an matrix with ones, of the shape of boundry shape
+space = np.ones((201,601,3),dtype='uint8')  #Creating an matrix with ones, of the shape of boundry shape
 
 Obstacle_Clearance = int(input("Enter the Obstacle Clearance of the Robot: "))
 obstacle_space(space)           #Creating the obstacle boundries
 
-
 Obs_Coords= boundry_creation(space)
+
 # for val in Obs_Coords:
 #     if val == (101,70):
 #         print("the val is present in obstacle", val)
@@ -270,10 +248,10 @@ UncheckedList.put(start)
 reached=0
 while UncheckedList.qsize() != 0:
     a = UncheckedList.get()
-    print(a)
+    # print(a)
     #print(goal_pt)
-    if CheckedList[round(a[3][1]),round(a[3][0])] != 1:
-        CheckedList[round(a[3][1]),round(a[3][0])] = 1
+    if CheckedList[int(round(a[3][1])), int(round(a[3][0]))] != 1:
+        CheckedList[int(round(a[3][1])), int(round(a[3][0]))] = 1
         if a[1] > 5:
             zero_n_rpm1(a)     
             rpm1_n_zero(a)
@@ -299,7 +277,8 @@ if reached ==1:
     b = B_tracking(Pth, initial_pt)
     print("path")
     print(b)
-
+    
+        
     # for i in CheckedList:
     #     space[250-i[1]][i[0]] = [255,0,0]
 
@@ -308,32 +287,39 @@ if reached ==1:
     
     #     if cv.waitKey(1) & 0xFF == ord('q'):
     #         break
-
-    # for i in CloseList:
-    #     j = Pth.get(i)
-    #     cv.line(space,(i[0],250-i[1]),(j[0],250-j[1]),(0,0,255),1)
+    print("Closed list")
+    for i in CloseList:
+        xi,yi,teta = i[0],i[1],round(i[2])
+        j = Pth.get((xi,yi,teta))
+        cv.line(space,(int(i[0]),200-int(i[1])),(int(j[0]),200-int(j[1])),(0,0,255),1)
         
-    #     cv.imshow("Space",space)
-    #     if cv.waitKey(50) & 0xFF == ord('q'):
-    #         break
+        # cv.imshow("Space",space)
+        ScaledUp = cv.resize(space, (1202, 402))
+        cv.imshow("ScaledUp", ScaledUp)
+        if cv.waitKey(20) & 0xFF == ord('q'):
+            break
 
-    # for j in b:
-    #     space[250-j[1]][j[0]] = [0,255,0]
-    #     cv.circle(space,(j[0],250-j[1]), Robot_Radius, (0,255,0), -1)
-    #     cv.imshow("SPACE", space )
-    #     if cv.waitKey(50) & 0xFF == ord('q'):
-    #         break
+    for j in b:
+        space[200-int(j[1])][int(j[0])] = [0,255,0]
+        cv.circle(space,(int(j[0]),200-int(j[1])), Robot_Radius, (0,255,0), -1)
+        # cv.imshow("SPACE", space )
+        SPACEscaledUp = cv.resize(space, (1202, 402))
+        cv.imshow("SPACE", SPACEscaledUp)
+        if cv.waitKey(50) & 0xFF == ord('q'):
+            break
 
 
 else:
     print("The Gaol node cannot be reached")
-plt.grid()
-ax.set_aspect('equal')
-plt.xlim(0,600)
-plt.ylim(0,250)
-plt.title('How to plot a vector in matplotlib ?',fontsize=10)
-plt.show()
-plt.close()
+# plt.grid()
+# ax.set_aspect('equal')
+# plt.xlim(0,600)
+# plt.ylim(0,200)
+# plt.title('How to plot a vector in matplotlib ?',fontsize=10)
+# plt.show()
+# plt.close()
 
+# cv.imshow("SPACE", space )
+# cv.waitKey()
 
-# cv.destroyAllWindows()
+cv.destroyAllWindows()

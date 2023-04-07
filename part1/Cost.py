@@ -4,13 +4,12 @@ import math
 
 def cost(Xi,Yi,Thetai,UL,UR):
     t = 0
-    r = 0.066
-    L = 0.178
+    r = 0.033
+    L = 0.16
     dt = 0.1
     Xn=Xi
     Yn=Yi
     Thetan = 3.14 * Thetai / 180
-
 
 # Xi, Yi,Thetai: Input point's coordinates
 # Xs, Ys: Start point coordinates for plot function
@@ -25,15 +24,17 @@ def cost(Xi,Yi,Thetai,UL,UR):
         t = t + dt
         # Xs = Xn
         # Ys = Yn
-        Delta_Xn = 0.5*r * (UL + UR) * math.cos(Thetan) * dt
-        Delta_Yn = 0.5*r * (UL + UR) * math.sin(Thetan) * dt
+        Delta_Xn = 0.5*r * (UL + UR) * 2*math.pi / 60 * math.cos(Thetan) * dt
+        Delta_Yn = 0.5*r * (UL + UR) * 2*math.pi / 60 * math.sin(Thetan) * dt
         Xn += Delta_Xn # update the positions each iteration
         Yn += Delta_Yn
         x.append(Xn)
         y.append(Yn)
-        Thetan += (r / L) * (UR - UL) * dt
+        #          m / m  * (rpm - rpm) * (rad/rev) *(min/sec) * sec
+        Thetan += (r / L) * (UR - UL) * 2*math.pi/60 * dt
         D += math.sqrt(math.pow((0.5*r * (UL + UR) * math.cos(Thetan) * dt),2) + math.pow((0.5*r * (UL + UR) * math.sin(Thetan) * dt),2))
         i = i + 1
+    print("Thetan: ", Thetan, "for [", UL, UR, "]")
     Thetan = 180 * (Thetan) / 3.14
     
 
@@ -52,15 +53,15 @@ for action in actions:
     x_coords.append(k[0])
     y_coords.append(k[1])
 
-k1 = cost(0, 0, 45, 0, rpm1)
+k1 = cost(0, 0, 0, 0, rpm1)
 plt.plot
-k2 = cost(0, 0, 45, rpm1, 0)
-k3 = cost(0, 0, 45, rpm1, rpm1)
-k4 = cost(0, 0, 45, rpm2, rpm2)
-k5 = cost(0, 0, 45, 0, rpm2)
-k6 = cost(0, 0, 45, rpm2, 0)
-k7 = cost(0, 0, 45, rpm1, rpm2)
-k8 = cost(0, 0, 45, rpm2, rpm1)
+k2 = cost(0, 0, 0, rpm1, 0)
+k3 = cost(0, 0, 0, rpm1, rpm1)
+k4 = cost(0, 0, 0, rpm2, rpm2)
+k5 = cost(0, 0, 0, 0, rpm2)
+k6 = cost(0, 0, 0, rpm2, 0)
+k7 = cost(0, 0, 0, rpm1, rpm2)
+k8 = cost(0, 0, 0, rpm2, rpm1)
 
 plt.title("Path Taken")
 plt.plot(k1[4], k1[5], 'd', label = '[0, rpm1]')
