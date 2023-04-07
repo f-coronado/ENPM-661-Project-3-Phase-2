@@ -20,6 +20,8 @@ CheckedList = np.zeros((250,600),dtype='uint8')     # Used to store the visited 
 Robot_Radius = 11     #Needs to be changed to 10.5
 Wheel_Radius = 3.3
 Wheel_Length = 16
+
+Obstacle_Clearance = 1 # predefined, overwritten if user decides to set a different value
 #Creating the Obstacle Space
 #Obtacle with Obstacle, Obstacle Clearance and Robot Radius
 def obstacle_space(space):
@@ -69,31 +71,16 @@ def boundry_creation(space):
                 boundry.append((m,250-l))
     return boundry
 
-
-
-
 #Getting User Inputs For the Start node from the user
 
-# def PromptPredefined():
-#     print("Want to use predefined start, goal and rpms?")
-#     ans = input("y/n?")
-#     if ans == "y":
-#         Obstacle_Clearance = 1
-#         obstacle_space(space)
-#         Obs_Coords= boundry_creation(space)
-#         xStart = 10
-#         yStart = 10
-#         zStart = 45
-#         startNode = (10, 10, 45)
-#         xGoal = 100
-#         yGoal = 30
-#         goalNode = ()
-#         rpm1 = 2
-#         rpm2 = 5
+def PromptPredefined():
+    print("Want to use predefined start, goal and rpms?")
+    ans = input("y/n? ")
+    if ans == "y":
+        return True
+    else:
+        return False
 
-#         return True
-#     else:
-#         return False
 def User_Inputs_Start(Obs_Coords):
     while True:
         x = int(input("Enter the Initial x node: "))
@@ -266,35 +253,43 @@ def generateVelocityPath(path, rpmDict):
     for i, key in enumerate(path):
         if i !=0:
             velocityPath.append(rpmDict[key])
-    print("\nvelocityPath: ", velocityPath, "\nvelocityPath length: ", len(velocityPath), "\nvelocityPath shape: ", len(velocityPath), "x", len(velocityPath[0]))
+    # print("\nvelocityPath: ", velocityPath, "\nvelocityPath length: ", len(velocityPath), "\nvelocityPath shape: ", len(velocityPath), "x", len(velocityPath[0]))
     # print("velocithPath[7]", velocityPath[7])
     return velocityPath
          
 space = np.ones((201,601,3),dtype='uint8')  #Creating an matrix with ones, of the shape of boundry shape
 
-Obstacle_Clearance = int(input("Enter the Obstacle Clearance of the Robot: "))
-obstacle_space(space)           #Creating the obstacle boundries
+if PromptPredefined() == False:
+    Obstacle_Clearance = int(input("Enter the Obstacle Clearance of the Robot: "))
+    obstacle_space(space)           #Creating the obstacle boundries
+    Obs_Coords= boundry_creation(space)
 
-Obs_Coords= boundry_creation(space)
+    initial_pt = User_Inputs_Start(Obs_Coords)  
+    goal_pt = User_Inputs_Goal(Obs_Coords)
+    rpm_1,rpm_2 = User_Input_rpm()
+    vel_1,vel_2 = rpm_to_velocity(rpm_1,rpm_2)
 
-# for val in Obs_Coords:
-#     if val == (101,70):
-#         print("the val is present in obstacle", val)
+    start = (0,0,0,initial_pt)
+    InitialEucledian_dist = np.sqrt(((goal_pt[0] - start[3][0])**2)+((goal_pt[1] - start[3][1])**2))  
+    InitialTotalCost = InitialEucledian_dist   
+    start = (InitialTotalCost,InitialEucledian_dist,0,initial_pt)
 
-initial_pt = User_Inputs_Start(Obs_Coords)  
-goal_pt = User_Inputs_Goal(Obs_Coords)
-rpm_1,rpm_2 = User_Input_rpm()
-vel_1,vel_2 = rpm_to_velocity(rpm_1,rpm_2)
-#Length_of_stepsize = int(input("Enter the stepsize of the robot in units bet(1<=stepsize<=10): "))
+else: 
+    Obstacle_Clearance = 1
+    obstacle_space(space)
+    Obs_Coords= boundry_creation(space)
 
-#print(initial_pt)
-#print(goal_pt)
-start = (0,0,0,initial_pt)
-#print(start)
-InitialEucledian_dist = np.sqrt(((goal_pt[0] - start[3][0])**2)+((goal_pt[1] - start[3][1])**2))  
-InitialTotalCost = InitialEucledian_dist   
-start = (InitialTotalCost,InitialEucledian_dist,0,initial_pt)
-#print(start)
+    initial_pt = (10, 10, 0)
+    goal_pt = (160, 10)
+    vel_1, vel_2 = rpm_to_velocity(rpm1 = 10, rpm2 = 10)
+
+    start = (0, 0, 0, initial_pt)
+    InitialEucledian_dist = np.sqrt(((goal_pt[0] - start[3][0])**2)+((goal_pt[1] - start[3][1])**2))
+    InitialTotalCost = InitialEucledian_dist
+    start = (InitialTotalCost, InitialEucledian_dist, 0, initial_pt)
+    print("start node: ", initial_pt, "\ngoal node: ", goal_pt, "\nrpm1 = 10, rpm2 = 10")
+
+
 UncheckedList.put(start)
 #print(UncheckedList)
 reached=0
@@ -327,8 +322,8 @@ while UncheckedList.qsize() != 0:
             break
 if reached ==1:
     b = B_tracking(Pth, initial_pt)
-    print("path: ", b, "path length: ", len(b))
-    print("\nrpmDict: ", rpmDict)
+    # print("path: ", b, "path length: ", len(b))
+    # print("\nrpmDict: ", rpmDict)
     velPath = generateVelocityPath(b, rpmDict)
     
     for i in CloseList:
@@ -398,7 +393,7 @@ def publishVelocities(velocityList):
     i = 0
     rowNumber = 1
     numberOfRows = len(velocityList)
-    linearFactorStraight = 1.4459225
+    linearFactorStraight = 1.4459225 * 2.6
     linearFactorCurved = 16.939258
     # angularFactor = .02110842
     angularFactor = 4.3190914 * 2.2789121 * 1.065
@@ -417,7 +412,7 @@ def publishVelocities(velocityList):
 
                 if t <= 1:
 
-                    # print("t = ", t, "on iteration: ", i)
+                    print("t = ", t, "on iteration: ", i)
                     # print()
                             # (m / m) * (rpm) * (2pi rad/1rpm) * (1min/60s) * s
                     thetaN += (r / L) * (UR - UL) * 2*pi / 60 * dt # rad
