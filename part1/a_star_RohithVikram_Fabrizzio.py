@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import cv2 as cv
 from queue import PriorityQueue
 import math
+import time
 
 boundry = []    
 Pth = {}        #Stores the path for backtracking
@@ -13,7 +14,9 @@ CheckedList = np.zeros((250,600),dtype='float64')     # Used to store the visite
 Robot_Radius = 11     #Needs to be changed to 10.5
 Wheel_Radius = 3.3
 Wheel_Length = 16
-s = 0
+
+startTime = time.time()
+
 #Creating the Obstacle Space
 #Obtacle with Obstacle, Obstacle Clearance and Robot Radius
 def obstacle_space(space):
@@ -109,12 +112,10 @@ def angle_conversion(theta):
     else:
         return theta
     
-fig, ax = plt.subplots()
-
 def a_star_function(pos,ul,ur):
-    old_x = pos[0]
-    old_y = pos[1]
-    theta = pos[2]
+    old_x = round(pos[0])
+    old_y = round(pos[1])
+    theta = round(pos[2])
     dt=0.1
     theta_n = (np.pi * (theta/180))
     Cost = 0
@@ -128,27 +129,24 @@ def a_star_function(pos,ul,ur):
     theta_n += (Wheel_Radius/Wheel_Length)*(ur-ul)
     theta_n = (180*(theta_n))/np.pi
     theta_n = angle_conversion(theta_n)
-    if (0<=round(Xn,1)<600) and (0<=round(Yn,1)<200):
-        if (CheckedList[round(Yn)][round(Xn)] != 1) and ((round(Xn),round(Yn)) not in Obs_Coords):
-            plt.scatter(Xn,Yn,color="blue")
+    if (0<=round(Xn)<600) and (0<=round(Yn)<200):
+        if (CheckedList[int(round(Yn))][int(round(Xn))] != 1) and ((round(Xn),round(Yn)) not in Obs_Coords):
+            # plt.scatter(Xn,Yn,color="blue")
             Cost = Cost+math.sqrt(math.pow((0.5*Wheel_Radius * (ul + ur) * np.cos(theta_n) * dt),2)+math.pow((0.5*Wheel_Radius * (ul + ur) * np.sin(theta_n) * dt),2))
             CloseList.append((round(Xn),round(Yn),round(theta_n))) 
             Eucledian_dist = np.sqrt(((goal_pt[0] - Xn)**2)+((goal_pt[1] - Yn)**2))
             TotalCost = Cost + Eucledian_dist
             for m in range(UncheckedList.qsize()):
-                if UncheckedList.queue[m][3] == (round(Xn,1),round(Yn,1),round(theta_n)):
+                if UncheckedList.queue[m][3] == (round(Xn),round(Yn),round(theta_n)):
                     if UncheckedList.queue[m][0] > TotalCost:
-                        UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,(round(Xn,1),round(Yn,1),round(theta_n)))
+                        UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,(round(Xn),round(Yn),round(theta_n)))
                         Pth[(Xn,Yn,theta_n)] = (old_x,old_y,theta)
                         return
                     else:
                         return
-            UncheckedList.put((TotalCost,Eucledian_dist,Cost,(round(Xn,1),round(Yn,1),round(theta_n))))
-            Pth[(Xn,Yn,theta_n)] = (old_x,old_y,theta)
+            UncheckedList.put((TotalCost,Eucledian_dist,Cost,(round(Xn),round(Yn),round(theta_n))))
+            Pth[(round(Xn),round(Yn),round(theta_n))] = (old_x,old_y,theta)
         
-
-
-    
     
 #left wheel rpm = 0 and right wheel rpm = rpm1
 def zero_n_rpm1(a):
@@ -208,44 +206,61 @@ def B_tracking(Pth,final_val,initial_pt):
         b_track.append(K)
     b_track.reverse()
     return (b_track)
+
+def PromptPredefined():
+    print("Want to use predefined start, goal and rpms?")
+    ans = input("y/n? ")
+    if ans == "y":
+        return True
+    else:
+        return False
          
 space = np.ones((201,601,3),dtype='uint8')  #Creating an matrix with ones, of the shape of boundry shape
 
-Obstacle_Clearance = int(input("Enter the Obstacle Clearance of the Robot: "))
-obstacle_space(space)           #Creating the obstacle boundries
+if PromptPredefined() == False:
+    Obstacle_Clearance = int(input("Enter the Obstacle Clearance of the Robot: "))
+    obstacle_space(space)           #Creating the obstacle boundries
+    Obs_Coords= boundry_creation(space)
+
+    initial_pt = User_Inputs_Start(Obs_Coords)  
+    goal_pt = User_Inputs_Goal(Obs_Coords)
+    rpm_1,rpm_2 = User_Input_rpm()
+    vel_1,vel_2 = rpm_to_velocity(rpm_1,rpm_2)
+
+    start = (0,0,0,initial_pt)
+    InitialEucledian_dist = np.sqrt(((goal_pt[0] - start[3][0])**2)+((goal_pt[1] - start[3][1])**2))  
+    InitialTotalCost = InitialEucledian_dist   
+    start = (InitialTotalCost,InitialEucledian_dist,0,initial_pt)
+else: 
+    Obstacle_Clearance = 1
+    obstacle_space(space)
+    Obs_Coords= boundry_creation(space)
+
+    initial_pt = (10, 10, 0)
+    # goal_pt = (225, 150)
+    goal_pt = (400, 175)
+    rpm1 = 40
+    rpm2 = 35
+
+    vel_1, vel_2 = rpm_to_velocity(rpm1, rpm2)
+
+    start = (0, 0, 0, initial_pt)
+    InitialEucledian_dist = np.sqrt(((goal_pt[0] - start[3][0])**2)+((goal_pt[1] - start[3][1])**2))
+    InitialTotalCost = InitialEucledian_dist
+    start = (InitialTotalCost, InitialEucledian_dist, 0, initial_pt)
+    print("start node: ", initial_pt, "\ngoal node: ", goal_pt, "\nrpm1: ", rpm1, "rpm2: ", rpm2)
 
 
-Obs_Coords= boundry_creation(space)
-
-# # for val in Obs_Coords:
-# #     if val == ():
-# #         print("the val is present in obstacle", val)
-#     else:
-#         print("good to go")
-initial_pt = User_Inputs_Start(Obs_Coords)  
-goal_pt = User_Inputs_Goal(Obs_Coords)
-rpm_1,rpm_2 = User_Input_rpm()
-vel_1,vel_2 = rpm_to_velocity(rpm_1,rpm_2)
-#Length_of_stepsize = int(input("Enter the stepsize of the robot in units bet(1<=stepsize<=10): "))
-
-#print(initial_pt)
-#print(goal_pt)
-start = (0,0,0,initial_pt)
-#print(start)
-InitialEucledian_dist = np.sqrt(((goal_pt[0] - start[3][0])**2)+((goal_pt[1] - start[3][1])**2))  
-InitialTotalCost = InitialEucledian_dist   
-start = (InitialTotalCost,InitialEucledian_dist,0,initial_pt)
-#print(start)
 UncheckedList.put(start)
 #print(UncheckedList)
 reached=0
 while UncheckedList.qsize() != 0:
     a = UncheckedList.get()
-    print(a)
-    s += 1
+    # print(a)
+    
     #print(goal_pt)
-    if CheckedList[round(a[3][1]),round(a[3][0])] != 1:
-        CheckedList[round(a[3][1]),round(a[3][0])] = 1
+    if CheckedList[int(round(a[3][1])), int(round(a[3][0]))] != 1:
+        CheckedList[int(round(a[3][1])) , int(round(a[3][0]))] = 1
         if a[1] > 5:
             zero_n_rpm1(a)     
             rpm1_n_zero(a)
@@ -268,16 +283,7 @@ while UncheckedList.qsize() != 0:
             print("success")
             reached=1
             break
-print(Pth)
-print(s)
-print(len(Pth))
-plt.grid()
-ax.set_aspect('equal')
-plt.xlim(0,600)
-plt.ylim(0,200)
-plt.title('How to plot a vector in matplotlib ?',fontsize=10)
-plt.show()
-plt.close()
+
 
 # cv.imshow("SPACE", space )
 # cv.waitKey()
@@ -286,24 +292,55 @@ plt.close()
 if reached ==1:
     print("hello")
     b = B_tracking(Pth,a, initial_pt)
-    print("hurray")
-    print(b)
+    
+    
     print("path")
     print(b)
     
     
+    # for i in CheckedList:
+    #     space[250-i[1]][i[0]] = [255,0,0]
+
+    #     cv.imshow("SPACE", space )
+    # # cv.waitKey(0)
+    
+    #     if cv.waitKey(1) & 0xFF == ord('q'):
+    #         break
+    # print("Closed list")
+    for i in CloseList:
+        xi,yi,teta = i[0],i[1],i[2]
+        j = Pth.get((xi,yi,teta))
+        cv.line(space,(int(i[0]), 200-int(i[1])),(int(j[0]),200-int(j[1])),(0,0,255),1)
+        
+        #cv.imshow("Space",space)
+        ScaledUp = cv.resize(space,(1202,402))
+        cv.imshow("Map",ScaledUp)
+        if cv.waitKey(20) & 0xFF == ord('q'):
+            break
+
+    for j in b:
+        space[200-int(j[1])][int(j[0])] = [0,255,0]
+        plt.scatter(int(j[0]), int(j[1]),color="blue")
+        cv.circle(space,(int(j[0]),200-int(j[1])), 1, (0,255,0), -1)
+        SPACEscaledUp = cv.resize(space,(1202,402))
+        cv.imshow("SPACE", SPACEscaledUp )
+        if cv.waitKey(50) & 0xFF == ord('q'):
+            break
+
 
 else:
-    print("The Gaol node cannot be reached")
-plt.grid()
-ax.set_aspect('equal')
-plt.xlim(0,600)
-plt.ylim(0,200)
-plt.title('How to plot a vector in matplotlib ?',fontsize=10)
-plt.show()
-plt.close()
+    print("The Goal node cannot be reached")
+# plt.grid()
+# ax.set_aspect('equal')
+# plt.xlim(0,600)
+# plt.ylim(0,200)
+# plt.title('How to plot a vector in matplotlib ?',fontsize=10)
+# plt.show()
+# plt.close()
 
-cv.imshow("SPACE", space )
-cv.waitKey()
+# cv.imshow("SPACE", space )
+# cv.waitKey()
 
 cv.destroyAllWindows()
+endTime = time.time()
+print("\nrun time = ", endTime - startTime, "seconds")

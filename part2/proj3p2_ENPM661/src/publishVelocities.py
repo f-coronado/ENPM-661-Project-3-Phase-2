@@ -10,6 +10,8 @@ import cv2 as cv
 from queue import PriorityQueue
 import math
 
+startTime = time.time()
+
 boundry = []
 Pth = {}        #Stores the path for backtracking
 rpmDict = {}
@@ -64,11 +66,11 @@ def boundry_creation(space):
     for l in range(h):
         for m in range(w):
             if space[l][m][2] == 255:
-                boundry.append((m,250-l))
+                boundry.append((m,200-l))
             if space[l][m][1] == 255:
-                boundry.append((m,250-l))
+                boundry.append((m,200-l))
             if space[l][m][0] == 20:
-                boundry.append((m,250-l))
+                boundry.append((m,200-l))
     return boundry
 
 #Getting User Inputs For the Start node from the user
@@ -280,15 +282,18 @@ else:
     Obs_Coords= boundry_creation(space)
 
     initial_pt = (10, 10, 0)
-    goal_pt = (160, 10)
-    vel_1, vel_2 = rpm_to_velocity(rpm1 = 10, rpm2 = 10)
+    # goal_pt = (225, 150)
+    goal_pt = (225, 100)
+    rpm1 = 5
+    rpm2 = 10
+
+    vel_1, vel_2 = rpm_to_velocity(rpm1, rpm2)
 
     start = (0, 0, 0, initial_pt)
     InitialEucledian_dist = np.sqrt(((goal_pt[0] - start[3][0])**2)+((goal_pt[1] - start[3][1])**2))
     InitialTotalCost = InitialEucledian_dist
     start = (InitialTotalCost, InitialEucledian_dist, 0, initial_pt)
-    print("start node: ", initial_pt, "\ngoal node: ", goal_pt, "\nrpm1 = 10, rpm2 = 10")
-
+    print("start node: ", initial_pt, "\ngoal node: ", goal_pt, "\nrpm1: ", rpm1, "rpm2: ", rpm2)
 
 UncheckedList.put(start)
 #print(UncheckedList)
@@ -339,48 +344,20 @@ if reached ==1:
 
     for j in b:
         space[200-int(j[1])][int(j[0])] = [0,255,0]
-        cv.circle(space,(int(j[0]),200-int(j[1])), Robot_Radius, (0,255,0), -1)
+        cv.circle(space,(int(j[0]),200-int(j[1])), 1, (0,255,0), -1)
         # cv.imshow("SPACE", space )
         SPACEscaledUp = cv.resize(space, (1202, 402))
         cv.imshow("SPACE", SPACEscaledUp)
         if cv.waitKey(50) & 0xFF == ord('q'):
             break
 
-
 else:
     print("The Goal node cannot be reached")
-# plt.grid()
-# ax.set_aspect('equal')
-# plt.xlim(0,600)
-# plt.ylim(0,200)
-# plt.title('How to plot a vector in matplotlib ?',fontsize=10)
-# plt.show()
-# plt.close()
 
-# cv.imshow("SPACE", space )
-# cv.waitKey()
-
-cv.destroyAllWindows()
-
-
-# velocityList = [[(1, 2, 0), (2, 5, 0), (5, 5, 0), (5, 5, 0), (5, 5, 0), (5, 2, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0)], \
-#                 [(2, 2, 0), (2, 5, 0), (5, 5, 0), (5, 5, 0), (5, 5, 0), (5, 2, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0)], \
-#                 [(3, 5, 0), (2, 5, 0), (5, 5, 0), (5, 5, 0), (5, 5, 0), (5, 2, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0)], \
-#                 [(4, 5, 0), (2, 5, 0), (5, 5, 0), (5, 5, 0), (5, 5, 0), (5, 2, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0)]]
-
-# [rpm1, rpm2]
-# velocityList = [[(2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0), (2, 5, 0)]]
-
-# [0, rpm2]
-# velocityList = [[(0, 5, 0), (0, 5, 0), (0, 5, 0), (0, 5, 0), (0, 5, 0), (0, 5, 0), (0, 5, 0), (0, 5, 0), (0, 5, 0), (0, 5, 0)]]
-
-# [rpm1, rpm1]
-# velocityList = [[(2, 2, 0), (2, 2, 0), (2, 2, 0), (2, 2, 0), (2, 2, 0), (2, 2, 0), (2, 2, 0), (2, 2, 0), (2, 2, 0), (2, 2, 0)]]
-
-# [0, rpm1]
-# velocityList = [[(0, 2, 0), (0, 2, 0), (0, 2, 0), (0, 2, 0), (0, 2, 0), (0, 2, 0), (0, 2, 0), (0, 2, 0), (0, 2, 0), (0, 2, 0)]]
 
 def publishVelocities(velocityList):
+
+    # print("velPath: ", velocityList)
 
     msg = Twist()
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
@@ -393,10 +370,11 @@ def publishVelocities(velocityList):
     i = 0
     rowNumber = 1
     numberOfRows = len(velocityList)
-    linearFactorStraight = 1.4459225 * 2.6
-    linearFactorCurved = 16.939258
+    linearFactorStraight = 1.4459225 * 2.7
+    # linearFactorCurved = 16.939258
+    linearFactorCurved = 2
     # angularFactor = .02110842
-    angularFactor = 4.3190914 * 2.2789121 * 1.065
+    angularFactor = 4.3190914 * 2.3
  # subscribe to odom topic, at each point create an x, y and theta
 
     while not rospy.is_shutdown():
@@ -412,32 +390,29 @@ def publishVelocities(velocityList):
 
                 if t <= 1:
 
-                    print("t = ", t, "on iteration: ", i)
+                    # print("t = ", t, "on iteration: ", i)
                     # print()
                             # (m / m) * (rpm) * (2pi rad/1rpm) * (1min/60s) * s
                     thetaN += (r / L) * (UR - UL) * 2*pi / 60 * dt # rad
-                    
-                                    # (m / m) * (rpm - rpm) * (1rad/1rpm) * cos
-                    # msg.linear.x = (r / 2) * (UL + UR) * 2*pi * cos(thetaN) # m/s check units
-                    # msg.linear.y = (r / 2) * (UL + UR) * 2*pi * sin(thetaN)
                     Vx = (r / 2) * (UL + UR) * 2*pi/60 * cos(thetaN) # m/s check units
                     Vy = (r / 2) * (UL + UR) * 2*pi/60 * sin(thetaN)
-                    # if UL == UR:
-                    # print("UL == UR")
-                    msg.linear.x = sqrt(Vx**2 + Vy**2) * linearFactorStraight
-                    msg.angular.z = (r / L) * (UR - UL) * 2*pi/60 * angularFactor # radians/s
+                    if UL == UR:
+                        # print("UL == UR")
+                        msg.linear.x = sqrt(Vx**2 + Vy**2) * linearFactorStraight
+                        msg.angular.z = 0
+                        # msg.angular.z = (r / L) * (UR - UL) * 2*pi/60 * angularFactor # radians
                         # multiplying by factor bc motors and encoders? are iffy. helpful to upscale angular.z by constant, look at odom and compare
-                    # if UL != UR:
-                    #     print("UL != UR")
-                    #     msg.linear.x = sqrt(Vx**2 + Vy**2) * linearFactorCurved
-                    #     msg.angular.z = (r / L) * (UR - UL) * 2*pi/60 * angularFactor
+                    if UL != UR:
+                        # print("UL != UR")
+                        msg.linear.x = sqrt(Vx**2 + Vy**2) * linearFactorCurved
+                        msg.angular.z = (r / L) * (UR - UL) * 2*pi/60 * angularFactor
 
                     pub.publish(msg)
                     rate.sleep()
                 
                 t = round(t + dt, 2)
 
-                if t >= 1:
+                if t >= .9:
                     t = 0
                     print("\nt > 1, stopping robot, moving onto next row")
                     msg.angular.z = 0
@@ -456,5 +431,9 @@ def publishVelocities(velocityList):
 if __name__=='__main__':
     try:
         publishVelocities(velPath)
+        cv.destroyAllWindows()
+        endTime = time.time()
+        print("\nrun time = ", endTime - startTime, "seconds")
+        # time.sleep(100)
     except rospy.ROSInternalException:
         pass
