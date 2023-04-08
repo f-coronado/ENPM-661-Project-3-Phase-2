@@ -4,15 +4,16 @@ import cv2 as cv
 from queue import PriorityQueue
 import math
 
-boundry = []
+boundry = []    
 Pth = {}        #Stores the path for backtracking
 UncheckedList = PriorityQueue()     #Used to store unvisited nodes
 b_track = []            
 CloseList = []
-CheckedList = np.zeros((250,600),dtype='uint8')     # Used to store the visited nodes
+CheckedList = np.zeros((250,600),dtype='float64')     # Used to store the visited nodes
 Robot_Radius = 11     #Needs to be changed to 10.5
 Wheel_Radius = 3.3
 Wheel_Length = 16
+s = 0
 #Creating the Obstacle Space
 #Obtacle with Obstacle, Obstacle Clearance and Robot Radius
 def obstacle_space(space):
@@ -55,11 +56,11 @@ def boundry_creation(space):
     for l in range(h):
         for m in range(w):
             if space[l][m][2] == 255:
-                boundry.append((m,250-l))
+                boundry.append((m,200-l))
             if space[l][m][1] == 255:
-                boundry.append((m,250-l))
+                boundry.append((m,200-l))
             if space[l][m][0] == 20:
-                boundry.append((m,250-l))
+                boundry.append((m,200-l))
     return boundry
 
 
@@ -72,7 +73,7 @@ def User_Inputs_Start(Obs_Coords):
         y = int(input("Enter the Initial y node: "))
         z = int(input("Enter the orientation of robot at start pt.(in degrees): "))
         
-        if((x>=0) or (x<=600)) and (y>=0) or (y<=250):
+        if((x>=0) and (x<=600)) and (y>=0) and (y<=200):
             if (x,y) not in Obs_Coords :
                 start_node = (x,y,z)
                 return start_node
@@ -85,7 +86,7 @@ def User_Inputs_Goal(Obs_Coords):
         y = int(input("Enter the Goal y node: "))
         
         #goal_node = (x,y)
-        if((x>=0) or (x<=600)) and (y>=0) or (y<=250):
+        if((x>=0) and (x<=600)) and (y>=0) and (y<=200):
             if (x,y) not in Obs_Coords :
                 goal_node=(x,y)
                 break
@@ -109,54 +110,46 @@ def angle_conversion(theta):
         return theta
     
 fig, ax = plt.subplots()
-def func_Cost(old_x,old_y,theta,ul,ur):
-    t = 0
-    dt = 0.1
+
+def a_star_function(pos,ul,ur):
+    old_x = pos[0]
+    old_y = pos[1]
+    theta = pos[2]
+    dt=0.1
     theta_n = (np.pi * (theta/180))
-    D = 0
+    Cost = 0
     Xn = old_x
     Yn = old_y
-    while t<1:
-        t = t+dt
-        Xn += 0.5*Wheel_Radius*(ul+ur)*np.cos(theta_n)*dt
-        Yn += 0.5*Wheel_Radius*(ul+ur)*np.sin(theta_n)*dt
+    
+    Xn += 0.5*Wheel_Radius*(ul+ur)*np.cos(theta_n)*dt
+    Yn += 0.5*Wheel_Radius*(ul+ur)*np.sin(theta_n)*dt
         # print(Xn)
         # print(Yn)
-        theta_n += (Wheel_Radius/Wheel_Length)*(ur-ul)
-        if (round(Xn),round(Yn)) not in Obs_Coords:
-            D = D+math.sqrt(math.pow((0.5*Wheel_Radius * (ul + ur) * np.cos(theta_n) * dt),2)+math.pow((0.5*Wheel_Radius * (ul + ur) * np.sin(theta_n) * dt),2))
-            
-        else:
-            D = 0
-            Xn = old_x
-            Yn = old_y
-            return (D,Xn,Yn,theta_n)
+    theta_n += (Wheel_Radius/Wheel_Length)*(ur-ul)
     theta_n = (180*(theta_n))/np.pi
     theta_n = angle_conversion(theta_n)
-    return (D,Xn,Yn,theta_n)
+    if (0<=round(Xn,1)<600) and (0<=round(Yn,1)<200):
+        if (CheckedList[round(Yn)][round(Xn)] != 1) and ((round(Xn),round(Yn)) not in Obs_Coords):
+            plt.scatter(Xn,Yn,color="blue")
+            Cost = Cost+math.sqrt(math.pow((0.5*Wheel_Radius * (ul + ur) * np.cos(theta_n) * dt),2)+math.pow((0.5*Wheel_Radius * (ul + ur) * np.sin(theta_n) * dt),2))
+            CloseList.append((round(Xn),round(Yn),round(theta_n))) 
+            Eucledian_dist = np.sqrt(((goal_pt[0] - Xn)**2)+((goal_pt[1] - Yn)**2))
+            TotalCost = Cost + Eucledian_dist
+            for m in range(UncheckedList.qsize()):
+                if UncheckedList.queue[m][3] == (round(Xn,1),round(Yn,1),round(theta_n)):
+                    if UncheckedList.queue[m][0] > TotalCost:
+                        UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,(round(Xn,1),round(Yn,1),round(theta_n)))
+                        Pth[(Xn,Yn,theta_n)] = (old_x,old_y,theta)
+                        return
+                    else:
+                        return
+            UncheckedList.put((TotalCost,Eucledian_dist,Cost,(round(Xn,1),round(Yn,1),round(theta_n))))
+            Pth[(Xn,Yn,theta_n)] = (old_x,old_y,theta)
+        
 
-def a_star_function(pos,vel1,vel2):
-    Costfn = func_Cost(pos[0],pos[1],pos[2],vel1,vel2)
-    if Costfn[0] !=0:
-        newPos = (Costfn[1],Costfn[2],Costfn[3])
-        Cost = Costfn[0]
-        x,y,_ = newPos
-        if (0<=round(x)<600) and (0<=round(y)<250):
-            if (CheckedList[int(round(y))][int(round(x))] != 1) and ((int(round(x)),int(round(y))) not in Obs_Coords):
-                    CloseList.append((round(x),round(y),newPos[2]))
-                    Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
-                    TotalCost = Cost + Eucledian_dist
-                    for m in range(UncheckedList.qsize()):
-                        if UncheckedList.queue[m][3] == newPos:
-                            if UncheckedList.queue[m][0] > TotalCost:
-                                UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
-                                Pth[(round(newPos[0]),round(newPos[1]),round(newPos[2]))] = (round(pos[0]),round(pos[1]),round(pos[2]))
-                                return
-                            else:
-                                return
-                    UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
-                    Pth[(round(newPos[0]),round(newPos[1]),round(newPos[2]))] = (round(pos[0]),round(pos[1]),round(pos[2]))
 
+    
+    
 #left wheel rpm = 0 and right wheel rpm = rpm1
 def zero_n_rpm1(a):
     pos = a[3]
@@ -203,17 +196,15 @@ def rpm_to_velocity(rpm1,rpm2):
 
 
 #Defining the bactracking algorithm 
-def B_tracking(Pth, initial_pt):
+def B_tracking(Pth,final_val,initial_pt):
     b_track = []
-    
-    a = list(Pth)[-1]
-    K = Pth.get(a)
-    b_track.append(a)
+    z = list(Pth)[-1]
+    K = Pth.get(z)
+    b_track.append(z)
     b_track.append(K)
-    
+    print(b_track)
     while K != (initial_pt):  
         K = Pth.get(K)
-        
         b_track.append(K)
     b_track.reverse()
     return (b_track)
@@ -223,12 +214,14 @@ space = np.ones((201,601,3),dtype='uint8')  #Creating an matrix with ones, of th
 Obstacle_Clearance = int(input("Enter the Obstacle Clearance of the Robot: "))
 obstacle_space(space)           #Creating the obstacle boundries
 
+
 Obs_Coords= boundry_creation(space)
 
-# for val in Obs_Coords:
-#     if val == (101,70):
-#         print("the val is present in obstacle", val)
-
+# # for val in Obs_Coords:
+# #     if val == ():
+# #         print("the val is present in obstacle", val)
+#     else:
+#         print("good to go")
 initial_pt = User_Inputs_Start(Obs_Coords)  
 goal_pt = User_Inputs_Goal(Obs_Coords)
 rpm_1,rpm_2 = User_Input_rpm()
@@ -248,10 +241,11 @@ UncheckedList.put(start)
 reached=0
 while UncheckedList.qsize() != 0:
     a = UncheckedList.get()
-    # print(a)
+    print(a)
+    s += 1
     #print(goal_pt)
-    if CheckedList[int(round(a[3][1])), int(round(a[3][0]))] != 1:
-        CheckedList[int(round(a[3][1])), int(round(a[3][0]))] = 1
+    if CheckedList[round(a[3][1]),round(a[3][0])] != 1:
+        CheckedList[round(a[3][1]),round(a[3][0])] = 1
         if a[1] > 5:
             zero_n_rpm1(a)     
             rpm1_n_zero(a)
@@ -270,56 +264,46 @@ while UncheckedList.qsize() != 0:
             #         break
 
         else:
+            
             print("success")
             reached=1
             break
-if reached ==1:
-    b = B_tracking(Pth, initial_pt)
-    print("path")
-    print(b)
-    
-        
-    # for i in CheckedList:
-    #     space[250-i[1]][i[0]] = [255,0,0]
-
-    #     cv.imshow("SPACE", space )
-    # # cv.waitKey(0)
-    
-    #     if cv.waitKey(1) & 0xFF == ord('q'):
-    #         break
-    print("Closed list")
-    for i in CloseList:
-        xi,yi,teta = i[0],i[1],round(i[2])
-        j = Pth.get((xi,yi,teta))
-        cv.line(space,(int(i[0]),200-int(i[1])),(int(j[0]),200-int(j[1])),(0,0,255),1)
-        
-        # cv.imshow("Space",space)
-        ScaledUp = cv.resize(space, (1202, 402))
-        cv.imshow("ScaledUp", ScaledUp)
-        if cv.waitKey(20) & 0xFF == ord('q'):
-            break
-
-    for j in b:
-        space[200-int(j[1])][int(j[0])] = [0,255,0]
-        cv.circle(space,(int(j[0]),200-int(j[1])), Robot_Radius, (0,255,0), -1)
-        # cv.imshow("SPACE", space )
-        SPACEscaledUp = cv.resize(space, (1202, 402))
-        cv.imshow("SPACE", SPACEscaledUp)
-        if cv.waitKey(50) & 0xFF == ord('q'):
-            break
-
-
-else:
-    print("The Gaol node cannot be reached")
-# plt.grid()
-# ax.set_aspect('equal')
-# plt.xlim(0,600)
-# plt.ylim(0,200)
-# plt.title('How to plot a vector in matplotlib ?',fontsize=10)
-# plt.show()
-# plt.close()
+print(Pth)
+print(s)
+print(len(Pth))
+plt.grid()
+ax.set_aspect('equal')
+plt.xlim(0,600)
+plt.ylim(0,200)
+plt.title('How to plot a vector in matplotlib ?',fontsize=10)
+plt.show()
+plt.close()
 
 # cv.imshow("SPACE", space )
 # cv.waitKey()
+
+# cv.destroyAllWindows()
+if reached ==1:
+    print("hello")
+    b = B_tracking(Pth,a, initial_pt)
+    print("hurray")
+    print(b)
+    print("path")
+    print(b)
+    
+    
+
+else:
+    print("The Gaol node cannot be reached")
+plt.grid()
+ax.set_aspect('equal')
+plt.xlim(0,600)
+plt.ylim(0,200)
+plt.title('How to plot a vector in matplotlib ?',fontsize=10)
+plt.show()
+plt.close()
+
+cv.imshow("SPACE", space )
+cv.waitKey()
 
 cv.destroyAllWindows()
